@@ -8,10 +8,10 @@ from rest.models import *
 
 def response(status, data):
 	body = {"status": status}
-	if status == "ERROR":
-		body["reason"] = data
-	else:
-		body["data"] = data
+	# if status == "ERROR":
+	# 	body["reason"] = data
+	# else:
+	body["data"] = data
 	return HttpResponse(json.dumps(body), content_type="application/json")
 
 def validate_sessid(sessid):
@@ -22,4 +22,4 @@ def validate_sessid(sessid):
 	return session.active
 
 def session_expired():
-	return response("ERROR", "Session expired.")
+	return response("error", "9001 Session expired.")
