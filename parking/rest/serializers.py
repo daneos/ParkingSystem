@@ -10,17 +10,25 @@ def IdSerializer(e, x):
 	data['id'] = x.id
 	return data
 
-# def UserSerializer(u, detail_mode=False):
-# 	data = {}
-# 	data['id'] = u.id
-# 	data['name'] = u.name
-# 	data['email'] = u.email
-# 	if detail_mode:
-# 		data['points'] = u.points
-# 		data['points_available'] = u.points_available
-# 		data['hours'] = u.hours
-# 		data['hour_goal'] = u.hour_goal
-# 	return data
+def UserListSerializer(e, l):
+	data = EventSerializer(e)
+	data['users'] = []
+	for u in l:
+		user = {}
+		user['id'] = u.id
+		user['name'] = u.name
+		data['users'].append(user)
+	return data
+
+def UserSerializer(e, u):
+	data = EventSerializer(e)
+	data['id'] = u.id
+	data['name'] = u.name
+	data['surname'] = u.surname
+	data['address'] = u.address
+	data['phone'] = u.phone
+	data['email'] = u.email
+	return data
 
 # def RoomSerializer(r, detail_mode=False):
 # 	data = {}

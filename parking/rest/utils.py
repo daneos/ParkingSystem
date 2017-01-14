@@ -1,5 +1,7 @@
 import json
 import datetime
+from time import time
+from uuid import uuid4
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -8,10 +10,9 @@ from rest.models import *
 
 def response(status, data):
 	body = {"status": status}
-	# if status == "ERROR":
-	# 	body["reason"] = data
-	# else:
 	body["data"] = data
+	body["timestamp"] = int(time())
+	body["uuid"] = str(uuid4())
 	return HttpResponse(json.dumps(body), content_type="application/json")
 
 def validate_sessid(sessid):

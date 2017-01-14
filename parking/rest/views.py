@@ -43,3 +43,14 @@ def logout(rq, sessid):
 		return response("ok", EventSerializer(event))
 	else:
 		return session_expired()
+
+def user(rq, sessid, uid=None):
+	if validate_sessid(sessid):
+		if uid is None:
+			event = "1001 User list"
+			return response("ok", UserListSerializer(event, User.objects.all()))
+		else:
+			event = "1002 User"
+			return response("ok", UserSerializer(event, get_object_or_404(User, pk=uid)))
+	else:
+		return session_expired()

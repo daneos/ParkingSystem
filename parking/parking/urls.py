@@ -27,8 +27,8 @@ urlpatterns = [
     url(r'%s/login' % base_url,										'rest.views.login'),
     url(r'%s/logout/%s/$' % (base_url,session),						'rest.views.logout'),
 
-    # url(r'%s/users/%s/$' % (base_url,session),						'rest.views.user'),
-    # url(r'%s/users/%s/(?P<uid>\d+)/$' % (base_url,session),			'rest.views.user'),
+    url(r'%s/user/%s/$' % (base_url,session),						'rest.views.user'),
+    url(r'%s/user/%s/(?P<uid>\d+)/$' % (base_url,session),			'rest.views.user'),
 
     # url(r'%s/parking/%s/$' % (base_url,session),					'rest.views.parking'),
     # url(r'%s/parking/%s/(?P<pid>\d+)/$' % (base_url,session),		'rest.views.parking'),
