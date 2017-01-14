@@ -34,12 +34,12 @@ class TransactionMethod(models.Model):
 class Spot(models.Model):
 	id = models.AutoField(primary_key=True)
 	parking_id = models.ForeignKey(Parking, on_delete=models.CASCADE)
-	owner_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='+')
-	user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='+')
+	owner_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='+', null=True, blank=True)
+	user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name='+', null=True, blank=True)
 	cost = models.FloatField()
 
 	def __str__(self):
-		return "Spot id:%d on parking id:%d" % (self.id, self.parking_id)
+		return "Spot id:%d on parking id:%d" % (self.id, self.parking_id.id)
 
 
 class Code(models.Model):
@@ -67,7 +67,7 @@ class Wallet(models.Model):
 	balance = models.FloatField()
 
 	def __str__(self):
-		return "User id:%d %s %s" % (self.id, self.name, self.surname)
+		return "Wallet id:%d user id:%d" % (self.id, self.owner_id.id)
 
 
 class Reservation(models.Model):
