@@ -78,6 +78,7 @@ def transactionmethod(rq, sessid):
 	else:
 		return session_expired()
 
+
 def spot_my(rq, sessid):
 	event = "1005 Owned spots"
 	if validate_sessid(sessid):
@@ -92,11 +93,14 @@ def spot_my(rq, sessid):
 	else:
 		return session_expired()
 
+
 def spot_free(rq, sessid, sid=None):
 	return response("error", "0000 Not implemented yet")
 
+
 def freespot(rq, sessid, pid=None):
 	return response("error", "0000 Not implemented yet")
+
 
 def wallet(rq, sessid):
 	event = "1008 Wallet"
@@ -106,35 +110,119 @@ def wallet(rq, sessid):
 	else:
 		return session_expired()
 
+
 def withdraw(rq, sessid):
-	return response("error", "0000 Not implemented yet")
+	event = "3001 Withdrawal"
+	if validate_sessid(sessid):
+		try:
+			amount = float(rq.GET.get("amount", None))
+		except Exception:
+			amount = None
+		if amount:
+			session = get_object_or_404(Session, session_hash=sessid)
+			wallet = get_object_or_404(Wallet, owner_id=session.user)
+			if amount > wallet.balance:
+				return response("error", "9007 Insufficient funds")
+			if query_payment_method(wallet, amount):
+				return response("ok", WithdrawalSerializer(event, wallet, amount))
+			else:
+				return response("error", "9008 Not accepted by remote payment system")
+		else:
+			return response("error", "9009 No amount given")
+	else:
+		return session_expired()
+
 
 def transaction(rq, sessid):
-	return response("error", "0000 Not implemented yet")
+	event = "1009 Transaction list"
+	if validate_sessid(sessid):
+		try:
+			session = get_object_or_404(Session, session_hash=sessid)
+			wallet = get_object_or_404(Wallet, owner_id=session.user)
+			transactions = Transaction.objects.filter(wallet_id=wallet)
+		except Exception as e:
+			return response("error", "9004 Application error: %s" % str(e))
+		else:
+			return response("ok", TransactionListSerializer(event, transactions))
+	else:
+		return session_expired()
+
 
 def car(rq, sessid):
-	return response("error", "0000 Not implemented yet")
+	event = "1010 Car list"
+	if validate_sessid(sessid):
+		try:
+			session = get_object_or_404(Session, session_hash=sessid)
+			cars = Car.objects.filter(owner_id=session.user)
+		except Exception as e:
+			return response("error", "9004 Application error: %s" % str(e))
+		else:
+			return response("ok", CarListSerializer(event, cars))
+	else:
+		return session_expired()
+
 
 def car_add(rq, sessid, plate=None):
-	return response("error", "0000 Not implemented yet")
+	event = "2002 Car added"
+	if validate_sessid(sessid):
+		if plate:
+			try:
+				session = get_object_or_404(Session, session_hash=sessid)
+				car = Car(
+					owner_id=session.user,
+					plate=plate
+				)
+				car.save()
+			except Exception as e:
+				return response("error", "9004 Application error: %s" % str(e))
+			else:
+				return response("ok", CarSerializer(event, car))
+		else:
+			return response("error", "9005 No license plate given")
+	else:
+		return session_expired()
+
 
 def code(rq, sessid, cid=None):
-	return response("error", "0000 Not implemented yet")
+	event = "1011 Code"
+	if validate_sessid(sessid):
+		if cid:
+			return response("ok", CodeSerializer(event, get_object_or_404(Code, pk=cid)))
+		else:
+			return response("error", "9006 No code ID")
+	else:
+		return session_expired()
+
 
 def reservation(rq, sessid):
 	return response("error", "0000 Not implemented yet")
 
+
 def reservation_prolong(rq, sessid, rid=None):
 	return response("error", "0000 Not implemented yet")
+
 
 def search(rq, sessid):
 	return response("error", "0000 Not implemented yet")
 
+
 def notifications(rq, sessid):
-	return response("error", "0000 Not implemented yet")
+	event = "1014 Notifications"
+	if validate_sessid(sessid):
+		notifs = [
+			{
+				"time": 0,
+				"message": "Test notification."
+			}
+		]
+		return response("ok", NotificationListSerializer(event, notifs))
+	else:
+		return session_expired()
+
 
 def payment(rq, wid=None):
 	return response("error", "0000 Not implemented yet")
 
-def entrance_open(rq, data=None):
+
+def open(rq, data=None):
 	return response("error", "0000 Not implemented yet")

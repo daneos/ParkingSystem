@@ -24,3 +24,7 @@ def validate_sessid(sessid):
 
 def session_expired():
 	return response("error", "9001 Session expired.")
+
+def query_payment_method(*args):
+	""" This is just a dummy payment function """
+	return True

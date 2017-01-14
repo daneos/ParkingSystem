@@ -63,5 +63,5 @@ urlpatterns = [
 
 
     url(r'%s/payment/(?P<wid>\d+)' % base_url,						'rest.views.payment'),
-    url(r'%s/open/(?P<data>.*)$' % base_url,						'rest.views.entrance_open'),
+    url(r'%s/open/(?P<data>.*)$' % base_url,						'rest.views.open'),
 ]
