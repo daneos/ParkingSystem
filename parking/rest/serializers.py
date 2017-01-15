@@ -142,3 +142,39 @@ def SearchSerializer(e, l):
 		spot['parking_id'] = f.spot_id.parking_id.id
 		data['spots'].append(spot)
 	return data
+
+def FreeSpotSerializer(e, f):
+	data = EventSerializer(e)
+	data['id'] = f.id
+	data['spot_id'] = f.spot_id.id
+	data['time_start'] = int(mktime(f.time_start.utctimetuple()))
+	data['time_end'] = int(mktime(f.time_end.utctimetuple()))
+	return data
+
+def ReservationListSerializer(e, l):
+	data = EventSerializer(e)
+	data['reservations'] = []
+	for r in l:
+		reservation = {}
+		reservation['id'] = r.id
+		reservation['spot_id'] = r.spot_id.id
+		reservation['time_start'] = int(mktime(r.time_start.utctimetuple()))
+		reservation['time_end'] = int(mktime(r.time_end.utctimetuple()))
+		data['reservations'].append(reservation)
+	return data
+
+def ReservationSerializer(e, r, c):
+	data = EventSerializer(e)
+	data['id'] = r.id
+	data['time_start'] = int(mktime(r.time_start.utctimetuple()))
+	data['time_end'] = int(mktime(r.time_end.utctimetuple()))
+	data['spot_id'] = r.spot_id.id
+	data['user_id'] = r.user_id.id
+	data['code'] = c.id
+	return data
+
+def ProlongationSerializer(e, r):
+	data = EventSerializer(e)
+	data['id'] = r.id
+	data['time_end'] = int(mktime(r.time_end.utctimetuple()))
+	return data

@@ -1,4 +1,6 @@
+from time import time
 from datetime import datetime
+from base64 import b64encode
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 
@@ -96,7 +98,26 @@ def spot_my(rq, sessid):
 
 
 def spot_free(rq, sessid, sid=None):
-	return response("error", "0000 Not implemented yet")
+	event = "2001 Spot freed"
+	if validate_sessid(sessid):
+		session = get_object_or_404(Session, session_hash=sessid)
+		spot = get_object_or_404(Spot, pk=sid)
+		if spot.owner_id == session.user:
+			try:
+				freespot = FreeSpot(
+					spot_id=spot,
+					time_start=datetime.fromtimestamp(float(rq.GET.get("from"))),
+					time_end=datetime.fromtimestamp(float(rq.GET.get("to")))
+				)
+				freespot.save()
+			except Exception as e:
+				return response("error", "9004 Application error: %s" % str(e))
+			else:
+				return response("ok", FreeSpotSerializer(event, freespot))
+		else:
+			return response("error", "9012 Not an owner")
+	else:
+		return session_expired()
 
 
 def freespot(rq, sessid, pid=None):
@@ -210,11 +231,59 @@ def code(rq, sessid, cid=None):
 
 
 def reservation(rq, sessid):
-	return response("error", "0000 Not implemented yet")
+	if validate_sessid(sessid):
+		session = get_object_or_404(Session, session_hash=sessid)
+		spot = rq.GET.get("spot", None)
+		time_start = rq.GET.get("from", None)
+		time_end = rq.GET.get("to", None)
+		if None in (spot, time_start, time_end):
+			event = "1012 Reservation list"
+			return response("ok", ReservationListSerializer(event, Reservation.objects.filter(user_id=session.user)))
+		else:
+			try:
+				spot_obj = get_object_or_404(Spot, id=spot)
+				reservation = Reservation(
+					user_id=session.user,
+					spot_id=spot_obj,
+					time_start=datetime.fromtimestamp(float(time_start)),
+					time_end=datetime.fromtimestamp(float(time_end))
+				)
+				reservation.save()
+				code = Code(
+					parking_id = spot_obj.parking_id,
+					data=b64encode("PID:%d\\Open allowed.\\%X" % (spot_obj.parking_id.id, int(time()))),
+					active=True
+				)
+				code.save()
+			except Exception as e:
+				return response("error", "9004 Application error: %s" % str(e))
+			else:
+				event = "2003 Reservation created"
+				return response("ok", ReservationSerializer(event, reservation, code))
+	else:
+		return session_expired()
 
 
 def reservation_prolong(rq, sessid, rid=None):
-	return response("error", "0000 Not implemented yet")
+	event = "2004 Reservation prolonged"
+	if validate_sessid(sessid):
+		if rid:
+			reservation = get_object_or_404(Reservation, pk=rid)
+			time_end = rq.GET.get("to", None)
+			if time_end:
+				try:
+					reservation.time_end = datetime.fromtimestamp(float(time_end))
+					reservation.save()
+				except Exception as e:
+					return response("error", "9004 Application error: %s" % str(e))
+				else:
+					return response("ok", ProlongationSerializer(event, reservation))
+			else:
+				return response("error", "9013 No new time")
+		else:
+			return response("error", "9014 No reservation ID.")
+	else:
+		return session_expired()
 
 
 def search(rq, sessid):
