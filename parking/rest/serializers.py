@@ -130,6 +130,8 @@ def FreeSpotListSerializer(e, l):
 		spot = {}
 		spot['id'] = s.id
 		spot['spot_id'] = s.spot_id.id
+		spot['time_start'] = int(mktime(s.time_start.utctimetuple()))
+		spot['time_end'] = int(mktime(s.time_end.utctimetuple()))
 		data['spots'].append(spot)
 	return data
 
