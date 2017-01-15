@@ -352,12 +352,10 @@ def notifications(rq, sessid):
 			# check reservations
 			try:
 				reservations = Reservation.objects.filter(user_id=session.user)
-				print reservations
 			except Exception as e:
 				reservations = []
 			
 			for r in reservations:
-				print r
 				if mktime(r.time_end.utctimetuple()) <= time()+1800:
 					notif = { "time":mktime(r.time_end.utctimetuple()) }
 					notif["message"] = "Your reservation on %s is ending in %dmin" % (r.spot_id.parking_id.name, int((mktime(r.time_end.utctimetuple())-time())/60))
