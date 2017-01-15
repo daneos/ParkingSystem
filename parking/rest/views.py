@@ -318,7 +318,7 @@ def search(rq, sessid):
 def notifications(rq, sessid):
 	event = "1014 Notifications"
 	if validate_sessid(sessid):
-		# try:
+		try:
 			session = get_object_or_404(Session, session_hash=sessid)
 			notifs = []
 
@@ -349,9 +349,9 @@ def notifications(rq, sessid):
 					notif = { "time":mktime(r.time_end.utctimetuple()) }
 					notif["message"] = "Your reservation on %s is ending in %dmin" % (r.spot_id.parking_id.name, int((mktime(r.time_end.utctimetuple())-time())/60))
 					notifs.append(notif)
-		# except Exception as e:
-			# return response("error", "9004 Application error: %s" % str(e))
-		# else:
+		except Exception as e:
+			return response("error", "9004 Application error: %s" % str(e))
+		else:
 			return response("ok", NotificationListSerializer(event, notifs))
 	else:
 		return session_expired()
