@@ -99,7 +99,7 @@ class FreeSpot(models.Model):
 	spot_id = models.ForeignKey(Spot, on_delete=models.CASCADE)
 
 	def __str__(self):
-		return "FreeSpot id:%d spot id:%d" % (self.id, self.spot_id)
+		return "FreeSpot id:%d spot id:%d" % (self.id, self.spot_id.id)
 
 
 class Session(models.Model):

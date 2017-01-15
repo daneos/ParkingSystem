@@ -1,5 +1,6 @@
 from datetime import datetime
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 
 from rest.models import *
 from rest.serializers import *
@@ -99,7 +100,21 @@ def spot_free(rq, sessid, sid=None):
 
 
 def freespot(rq, sessid, pid=None):
-	return response("error", "0000 Not implemented yet")
+	if validate_sessid(sessid):
+		if pid is None:
+			event = "1006 Free spots"
+			return response("ok", FreeSpotListSerializer(event, FreeSpot.objects.all()))
+		else:
+			event = "1007 Free spots"
+			try:
+				parking = get_object_or_404(Parking, id=pid)
+				spots = Spot.objects.filter(parking_id=parking)
+				freespots = FreeSpot.objects.filter(spot_id=spots)
+			except Exception as e:
+				return response("error", "9004 Application error: %s" % str(e))
+			return response("ok", FreeSpotListSerializer(event, freespots))
+	else:
+		return session_expired()
 
 
 def wallet(rq, sessid):
@@ -203,7 +218,30 @@ def reservation_prolong(rq, sessid, rid=None):
 
 
 def search(rq, sessid):
-	return response("error", "0000 Not implemented yet")
+	event = "1013 Search results"
+	if validate_sessid(sessid):
+		try:
+			q = rq.GET.get("q", None)
+			time_start = rq.GET.get("from", None)
+			time_end = rq.GET.get("to", None)
+			if None in (q, time_start, time_end):
+				return response("error", "9010 Parameter missing")
+			parkings = Parking.objects.get(Q(name__icontains=q) | Q(address__icontains=q))
+			spots = Spot.objects.filter(parking_id=parkings)
+			freespots = FreeSpot.objects.filter(
+				Q(spot_id=spots) & 
+				Q(time_start__lte=datetime.fromtimestamp(float(time_start))) & 
+				Q(time_end__gte=datetime.fromtimestamp(float(time_end)))
+			)
+			if not (spots and freespots):
+				return response("error", "9011 No spots found")
+		except Exception as e:
+			return response("error", "9004 Application error: %s" % str(e))
+		else:
+			return response("ok", SearchSerializer(event, freespots, spots))
+
+	else:
+		return session_expired()
 
 
 def notifications(rq, sessid):

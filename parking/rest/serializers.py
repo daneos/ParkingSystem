@@ -122,3 +122,23 @@ def NotificationListSerializer(e, l):
 	data = EventSerializer(e)
 	data['notifications'] = l
 	return data
+
+def FreeSpotListSerializer(e, l):
+	data = EventSerializer(e)
+	data['spots'] = []
+	for s in l:
+		spot = {}
+		spot['id'] = s.id
+		spot['spot_id'] = s.spot_id.id
+		data['spots'].append(spot)
+	return data
+
+def SearchSerializer(e, l):
+	data = EventSerializer(e)
+	data['spots'] = []
+	for f in l:
+		spot = {}
+		spot['id'] = f.id
+		spot['parking_id'] = f.spot_id.parking_id.id
+		data['spots'].append(spot)
+	return data
