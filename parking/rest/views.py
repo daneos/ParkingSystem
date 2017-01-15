@@ -318,13 +318,41 @@ def search(rq, sessid):
 def notifications(rq, sessid):
 	event = "1014 Notifications"
 	if validate_sessid(sessid):
-		notifs = [
-			{
-				"time": 0,
-				"message": "Test notification."
-			}
-		]
-		return response("ok", NotificationListSerializer(event, notifs))
+		# try:
+			session = get_object_or_404(Session, session_hash=sessid)
+			notifs = []
+
+			# check processed transactions
+			wallet = get_object_or_404(Wallet, owner_id=session.user)
+			try:
+				transactions = Transaction.objects.filter(
+					Q(wallet_id=wallet) &
+					Q(time__gte=datetime.fromtimestamp(time()-12*3600))
+				)
+			except Exception:
+				transactions = []
+			for t in transactions:
+				notif = { "time":mktime(t.time.utctimetuple()) }
+				notif["message"] = "Your transaction of %f PLN was registered" % t.amount
+				notifs.append(notif)
+
+			# check reservations
+			try:
+				reservations = Reservation.objects.filter(user_id=session.user)
+				print reservations
+			except Exception as e:
+				reservations = []
+			
+			for r in reservations:
+				print r
+				if mktime(r.time_end.utctimetuple()) <= time()+1800:
+					notif = { "time":mktime(r.time_end.utctimetuple()) }
+					notif["message"] = "Your reservation on %s is ending in %dmin" % (r.spot_id.parking_id.name, int((mktime(r.time_end.utctimetuple())-time())/60))
+					notifs.append(notif)
+		# except Exception as e:
+			# return response("error", "9004 Application error: %s" % str(e))
+		# else:
+			return response("ok", NotificationListSerializer(event, notifs))
 	else:
 		return session_expired()
 
