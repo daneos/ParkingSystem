@@ -310,7 +310,7 @@ def search(rq, sessid):
 			time_end = rq.GET.get("to", None)
 			if None in (q, time_start, time_end):
 				return response("error", "9010 Parameter missing")
-			parkings = Parking.objects.get(Q(name__icontains=q) | Q(address__icontains=q))
+			parkings = Parking.objects.filter(Q(name__icontains=q) | Q(address__icontains=q))
 			spots = Spot.objects.filter(parking_id=parkings)
 			freespots = FreeSpot.objects.filter(
 				Q(spot_id=spots) & 
