@@ -137,6 +137,19 @@ def freespot(rq, sessid, pid=None):
 	else:
 		return session_expired()
 
+def freespot_my(rq, sessid):
+	event = "1015 Free spots"
+	if validate_sessid(sessid):
+		try:
+			session = get_object_or_404(Session, session_hash=sessid)
+			spots = Spot.objects.filter(owner_id=session.user)
+			freespots = FreeSpot.objects.filter(spot_id=spots)
+		except Exception as e:
+			return response("error", "9004 Application error: %s" % str(e))
+		return response("ok", FreeSpotListSerializer(event, freespots))
+	else:
+		return session_expired()
+
 
 def wallet(rq, sessid):
 	event = "1008 Wallet"

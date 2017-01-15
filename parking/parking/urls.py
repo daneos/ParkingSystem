@@ -40,6 +40,7 @@ urlpatterns = [
     url(r'%s/spot/%s/(?P<sid>\d+)/free/$' % (base_url,session),		'rest.views.spot_free'),
 
     url(r'%s/freespot/%s/$' % (base_url,session),					'rest.views.freespot'),
+    url(r'%s/freespot/%s/my$' % (base_url,session),					'rest.views.freespot_my'),
     url(r'%s/freespot/%s/(?P<pid>\d+)/$' % (base_url,session),		'rest.views.freespot'),
 
     url(r'%s/wallet/%s/$' % (base_url,session),						'rest.views.wallet'),
