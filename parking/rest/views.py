@@ -238,7 +238,7 @@ def search(rq, sessid):
 		except Exception as e:
 			return response("error", "9004 Application error: %s" % str(e))
 		else:
-			return response("ok", SearchSerializer(event, freespots, spots))
+			return response("ok", SearchSerializer(event, freespots))
 
 	else:
 		return session_expired()
