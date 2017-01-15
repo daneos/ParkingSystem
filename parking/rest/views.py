@@ -1,4 +1,4 @@
-from time import time
+from time import time, mktime
 from datetime import datetime
 from base64 import b64encode
 from django.shortcuts import get_object_or_404
@@ -328,8 +328,66 @@ def notifications(rq, sessid):
 
 
 def payment(rq, wid=None):
-	return response("error", "0000 Not implemented yet")
+	event = "3002 Payment"
+	if wid:
+		wallet = get_object_or_404(Wallet, pk=wid)
+		amount = rq.GET.get("amount", None)
+		if amount:
+			try:
+				amount = float(amount)
+				transaction = Transaction(
+					wallet_id=wallet,
+					amount=amount,
+					time=datetime.fromtimestamp(time()),
+					method_id=TransactionMethod.objects.get(name="PayPal")
+				)
+				transaction.save()
+				wallet.balance = wallet.balance + amount
+				wallet.save()
+			except Exception as e:
+				return response("error", "9004 Application error: %s" % str(e))
+			else:
+				return response("ok", TransactionSerializer(event, transaction))
+		else:
+			return response("error", "9017 No amount")
+	else:
+		response("error", "9018 No wallet ID")
 
 
 def open(rq, data=None):
-	return response("error", "0000 Not implemented yet")
+	event = "4001 Open"
+	if data:
+		code = get_object_or_404(Code, data=data)
+		if code.active:
+			try:
+				code.active = False
+				code.save()
+			except Exception as e:
+				return response("error", "9004 Application error: %s" % str(e))
+			else:
+				return response("ok", OpenSerializer(event, True))
+		else:
+			return response("error", "9016 Code inactive")
+	else:
+		return response("error", "9015 No data")
+
+
+def heartbeat(rq):
+	start = time()
+	event = "5001 Heartbeat"
+
+	# remove expired reservations and create freespots for them
+
+	# remove expired freespots
+
+	# expire sessions
+	try:
+		sessions = Session.objects.all()
+		for s in sessions:
+			if mktime(s.last_activity.utctimetuple()) < time()-3600:
+				s.active = False
+				s.save()
+	except Exception as e:
+		return response("error", "9019 Session expiration error: %s" % str(e))
+
+	return response("ok", HeartbeatSerializer(event, start))

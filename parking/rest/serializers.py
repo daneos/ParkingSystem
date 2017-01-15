@@ -1,4 +1,4 @@
-from time import mktime
+from time import time, mktime
 from rest.models import *
 
 def EventSerializer(e):
@@ -177,4 +177,21 @@ def ProlongationSerializer(e, r):
 	data = EventSerializer(e)
 	data['id'] = r.id
 	data['time_end'] = int(mktime(r.time_end.utctimetuple()))
+	return data
+
+def OpenSerializer(e, o):
+	data = EventSerializer(e)
+	data['open'] = o
+	return data
+
+def TransactionSerializer(e, t):
+	data = EventSerializer(e)
+	data['id'] = t.id
+	data['wallet_id'] = t.wallet_id.id
+	data['amount'] = t.amount
+	return data
+
+def HeartbeatSerializer(e, t):
+	data = EventSerializer(e)
+	data['time'] = time()-t
 	return data

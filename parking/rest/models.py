@@ -94,8 +94,8 @@ class Transaction(models.Model):
 
 class FreeSpot(models.Model):
 	id = models.AutoField(primary_key=True)
-	time_start = models.DateTimeField()
-	time_end = models.DateTimeField()
+	time_start = models.DateTimeField(null=True, blank=True)
+	time_end = models.DateTimeField(null=True, blank=True)
 	spot_id = models.ForeignKey(Spot, on_delete=models.CASCADE)
 
 	def __str__(self):
