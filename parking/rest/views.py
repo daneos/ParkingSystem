@@ -249,6 +249,8 @@ def reservation(rq, sessid):
 					time_end=datetime.fromtimestamp(float(time_end))
 				)
 				reservation.save()
+				spot_obj.user_id = session.user
+				spot_obj.save()
 				code = Code(
 					parking_id = spot_obj.parking_id,
 					data=b64encode("PID:%d\\Open allowed.\\%X" % (spot_obj.parking_id.id, int(time()))),
@@ -377,8 +379,29 @@ def heartbeat(rq):
 	event = "5001 Heartbeat"
 
 	# remove expired reservations and create freespots for them
+	try:
+		reservations = Reservation.objects.filter(time_end__lte=datetime.fromtimestamp(time()))
+		for r in reservations:
+			r.spot_id.user_id = None
+			r.spot_id.save()
+			if not r.spot_id.owner_id:
+				freespot = FreeSpot(
+					spot_id=r.spot_id,
+					time_start=None,
+					time_end=None
+				)
+				freespot.save()
+			r.delete()
+	except Exception as e:
+		return response("error", "9021 Reservation expiration error: %s" % str(e))
 
 	# remove expired freespots
+	try:
+		freespots = FreeSpot.objects.filter(time_end__lte=datetime.fromtimestamp(time()))
+		for f in freespots:
+			f.delete()
+	except Exception as e:
+		return response("error", "9020 FreeSpot expiration error: %s" % str(e))
 
 	# expire sessions
 	try:
