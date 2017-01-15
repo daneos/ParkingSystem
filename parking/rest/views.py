@@ -345,7 +345,7 @@ def notifications(rq, sessid):
 			except Exception:
 				transactions = []
 			for t in transactions:
-				notif = { "time":mktime(t.time.utctimetuple()) }
+				notif = { "time":int(mktime(t.time.utctimetuple())) }
 				notif["message"] = "Your transaction of %f PLN was registered" % t.amount
 				notifs.append(notif)
 
@@ -357,7 +357,7 @@ def notifications(rq, sessid):
 			
 			for r in reservations:
 				if mktime(r.time_end.utctimetuple()) <= time()+1800:
-					notif = { "time":mktime(r.time_end.utctimetuple()) }
+					notif = { "time":int(mktime(r.time_end.utctimetuple())) }
 					notif["message"] = "Your reservation on %s is ending in %dmin" % (r.spot_id.parking_id.name, int((mktime(r.time_end.utctimetuple())-time())/60))
 					notifs.append(notif)
 		except Exception as e:
